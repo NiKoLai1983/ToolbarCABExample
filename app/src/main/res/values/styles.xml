@@ -1,9 +1,31 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- colorPrimary is used, for instance, for the default ActionBar
+       (but not Toolbar) background.
+        We specify the same color for the toolbar background in
+        toolbar.xml.. -->
+        <item name="colorPrimary">@color/red</item>
+        <!-- colorPrimaryDark is used for the status bar (with the
+             battery, clock, etc). -->
+        <item name="colorPrimaryDark">@color/darkred</item>
+        <!-- colorAccent is used as the default value for
+             colorControlActivated which is used to tint widgets. -->
+        <item name="colorAccent">@color/accent</item>
+        <!-- Avoid the ActionBar to be pushed down when CAB is shown -->
+        <item tools:targetApi="ICE_CREAM_SANDWICH"
+            name="android:windowActionBarOverlay">true</item>
+        <!-- Support library compatibility -->
+        <item name="windowActionModeOverlay">true</item>
         <!-- Customize your theme here. -->
+        <item name="actionModeStyle">@style/AppTheme.ActionMode</item>
 
+    </style>
+
+    <style name="AppTheme.ActionMode" parent="@style/Widget.AppCompat.ActionMode">
+        <item name="background">@color/accent</item>
     </style>
 
 </resources>
