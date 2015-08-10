@@ -2,9 +2,11 @@ package es.jpv.android.examples.toolbarcabexample;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,8 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import es.jpv.android.examples.toolbarcabexample.dummy.DummyContent;
@@ -21,8 +22,8 @@ import es.jpv.android.examples.toolbarcabexample.dummy.DummyContent;
 /**
  * A fragment representing a list of Items.
  */
-public class ItemFragment extends ListFragment
-    implements AdapterView.OnItemLongClickListener {
+public class ItemFragment extends Fragment
+    implements RVAdapter.OnItemClickListener, RVAdapter.OnItemLongClickListener {
 
     public static ItemFragment newInstance() {
         return new ItemFragment();
@@ -63,10 +64,13 @@ public class ItemFragment extends ListFragment
         View view = inflater.inflate(R.layout.item_fragment, container, false);
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
-        listView.setAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS));
-        listView.setOnItemLongClickListener(this);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(llm);
+        RVAdapter adapter = new RVAdapter(DummyContent.ITEMS);
+        adapter.setOnItemClickListener(this);
+        adapter.setOnItemLongClickListener(this);
+        recyclerView.setAdapter(adapter);
 
         if (savedInstanceState != null) {
             if (savedInstanceState.getBoolean("isInActionMode")) {
@@ -74,6 +78,22 @@ public class ItemFragment extends ListFragment
             }
         }
         return view;
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        Toast.makeText(getActivity(),
+                "Clicked " + ((TextView) v.findViewById(R.id.textView)).getText() +
+                        " on position " + position,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onItemLongClick(View v, int position) {
+        Toast.makeText(getActivity(),
+                "Long clicked " + ((TextView) v.findViewById(R.id.textView)).getText() +
+                        " on position " + position,
+                Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -112,6 +132,26 @@ public class ItemFragment extends ListFragment
     }
 
     /**
+     * Callback method to be invoked when an item in this AdapterView has
+     * been clicked.
+     * <p/>
+     * Implementers can call getItemAtPosition(position) if they need
+     * to access the data associated with the selected item.
+     *
+     * @param parent   The AdapterView where the click happened.
+     * @param view     The view within the AdapterView that was clicked (this
+     *                 will be a view provided by the adapter)
+     * @param position The position of the view in the adapter.
+     * @param id       The row id of the item that was clicked.
+     */
+    //@Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText
+                (getActivity(), "Clicked position " + position + "!", Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    /**
      * Callback method to be invoked when an item in this view has been
      * clicked and held.
      * <p/>
@@ -124,7 +164,7 @@ public class ItemFragment extends ListFragment
      * @param id       The row id of the item that was clicked
      * @return true if the callback consumed the long click, false otherwise
      */
-    @Override
+    //@Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         view.setSelected(true);
         ((AppCompatActivity) getActivity()).startSupportActionMode(mActionMode);
