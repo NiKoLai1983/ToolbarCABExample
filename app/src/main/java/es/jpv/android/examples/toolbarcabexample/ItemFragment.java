@@ -13,7 +13,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +23,10 @@ import es.jpv.android.examples.toolbarcabexample.dummy.DummyContent;
  */
 public class ItemFragment extends Fragment
     implements RVAdapter.OnItemClickListener, RVAdapter.OnItemLongClickListener {
+
+    ActionMode mActionMode;
+    RVAdapter adapter;
+    Integer selectedPosition = null;
 
     public static ItemFragment newInstance() {
         return new ItemFragment();
@@ -67,14 +70,14 @@ public class ItemFragment extends Fragment
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(llm);
-        RVAdapter adapter = new RVAdapter(DummyContent.ITEMS);
+        adapter = new RVAdapter(DummyContent.ITEMS);
         adapter.setOnItemClickListener(this);
         adapter.setOnItemLongClickListener(this);
         recyclerView.setAdapter(adapter);
 
         if (savedInstanceState != null) {
             if (savedInstanceState.getBoolean("isInActionMode")) {
-                ((AppCompatActivity) getActivity()).startSupportActionMode(mActionMode);
+                ((AppCompatActivity) getActivity()).startSupportActionMode(mActionModeCallback);
             }
         }
         return view;
@@ -82,18 +85,23 @@ public class ItemFragment extends Fragment
 
     @Override
     public void onItemClick(View v, int position) {
-        Toast.makeText(getActivity(),
-                "Clicked " + ((TextView) v.findViewById(R.id.textView)).getText() +
-                        " on position " + position,
-                Toast.LENGTH_SHORT).show();
+        if (isInActionMode) {
+            mActionMode.finish();
+        } else {
+            Toast.makeText(getActivity(),
+                    "Clicked " + ((TextView) v.findViewById(R.id.textView)).getText() +
+                            " on position " + position,
+                    Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     @Override
     public void onItemLongClick(View v, int position) {
-        Toast.makeText(getActivity(),
-                "Long clicked " + ((TextView) v.findViewById(R.id.textView)).getText() +
-                        " on position " + position,
-                Toast.LENGTH_SHORT).show();
+        v.setSelected(true);
+        selectedPosition = position;
+        mActionMode = ((AppCompatActivity) getActivity())
+                .startSupportActionMode(mActionModeCallback);
     }
 
     /**
@@ -131,49 +139,9 @@ public class ItemFragment extends Fragment
         super.onDetach();
     }
 
-    /**
-     * Callback method to be invoked when an item in this AdapterView has
-     * been clicked.
-     * <p/>
-     * Implementers can call getItemAtPosition(position) if they need
-     * to access the data associated with the selected item.
-     *
-     * @param parent   The AdapterView where the click happened.
-     * @param view     The view within the AdapterView that was clicked (this
-     *                 will be a view provided by the adapter)
-     * @param position The position of the view in the adapter.
-     * @param id       The row id of the item that was clicked.
-     */
-    //@Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText
-                (getActivity(), "Clicked position " + position + "!", Toast.LENGTH_SHORT)
-                .show();
-    }
-
-    /**
-     * Callback method to be invoked when an item in this view has been
-     * clicked and held.
-     * <p/>
-     * Implementers can call getItemAtPosition(position) if they need to access
-     * the data associated with the selected item.
-     *
-     * @param parent   The AbsListView where the click happened
-     * @param view     The view within the AbsListView that was clicked
-     * @param position The position of the view in the list
-     * @param id       The row id of the item that was clicked
-     * @return true if the callback consumed the long click, false otherwise
-     */
-    //@Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        view.setSelected(true);
-        ((AppCompatActivity) getActivity()).startSupportActionMode(mActionMode);
-        return true;
-    }
-
     private boolean isInActionMode = false;
 
-    private ActionMode.Callback mActionMode = new ActionMode.Callback() {
+    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             mode.setTitle(R.string.options);
@@ -189,14 +157,16 @@ public class ItemFragment extends Fragment
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            int id = item.getItemId();
-            switch (id) {
+            switch (item.getItemId()) {
                 case R.id.delete:
                     Toast.makeText(
                             getActivity(),
-                            "Borrando item " + id,
+                            "Removing item " + selectedPosition,
                             Toast.LENGTH_SHORT)
                             .show();
+                    DummyContent.deleteItem(selectedPosition);
+                    adapter.notifyDataSetChanged();
+                    mActionMode.finish();
                     return true;
             }
             return false;
@@ -205,6 +175,7 @@ public class ItemFragment extends Fragment
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             isInActionMode = false;
+            selectedPosition = null;
         }
     };
 
