@@ -1,5 +1,7 @@
 package es.jpv.android.examples.toolbarcabexample;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,18 +9,23 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.List;
-
-import es.jpv.android.examples.toolbarcabexample.dummy.DummyContent;
-
 public class RVAdapter extends RecyclerView.Adapter<RVAdapter.ItemViewHolder> {
 
-    List<DummyContent.DummyItem> listItems;
+    Context mContext;
+    Cursor mCursor;
     OnItemClickListener onItemClickListener;
     OnItemLongClickListener onItemLongClickListener;
 
-    RVAdapter(List<DummyContent.DummyItem> items) {
-        this.listItems = items;
+    RVAdapter(Context context, Cursor cursor) {
+        this.mContext = context;
+        this.mCursor = cursor;
+    }
+
+    public void setCursor(Cursor cursor) {
+        if (null != mCursor) {
+            mCursor.close();
+        }
+        this.mCursor = cursor;
     }
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -39,13 +46,14 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.ItemViewHolder> {
 
     @Override
     public void onBindViewHolder(ItemViewHolder itemViewHolder, int i) {
-        itemViewHolder.itemName.setText(listItems.get(i).content);
+        mCursor.moveToPosition(i);
+        itemViewHolder.itemName.setText(mCursor.getString(1));
         itemViewHolder.position = i;
     }
 
     @Override
     public int getItemCount() {
-        return listItems.size();
+        return mCursor.getCount();
     }
 
     public static interface OnItemClickListener {

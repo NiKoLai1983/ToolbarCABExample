@@ -1,6 +1,7 @@
 package es.jpv.android.examples.toolbarcabexample;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -70,7 +71,7 @@ public class ItemFragment extends Fragment
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(llm);
-        adapter = new RVAdapter(DummyContent.ITEMS);
+        adapter = new RVAdapter(getActivity(), DummyContent.ITEMS_CURSOR);
         adapter.setOnItemClickListener(this);
         adapter.setOnItemLongClickListener(this);
         recyclerView.setAdapter(adapter);
@@ -161,10 +162,11 @@ public class ItemFragment extends Fragment
                 case R.id.delete:
                     Toast.makeText(
                             getActivity(),
-                            "Removing item " + selectedPosition,
+                            "Removing item in position " + selectedPosition,
                             Toast.LENGTH_SHORT)
                             .show();
-                    DummyContent.deleteItem(selectedPosition);
+                    Cursor cursor = DummyContent.deleteItem(selectedPosition);
+                    adapter.setCursor(cursor);
                     adapter.notifyDataSetChanged();
                     mActionMode.finish();
                     return true;
